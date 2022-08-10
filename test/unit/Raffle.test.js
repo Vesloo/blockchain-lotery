@@ -1,4 +1,4 @@
-const { assert } = require("chai");
+const { assert, expect } = require("chai");
 const { getNamedAccounts, ethers } = require("hardhat");
 const {
     developmentChains,
@@ -10,11 +10,12 @@ const {
     : describe("Raffle", async () => {
           let raffle;
           let mockV2Coordinator;
+          let deployer;
           const chainId = network.config.chainId;
           const sendValue = ethers.utils.parseEther("0.01");
 
           beforeEach(async () => {
-              const deployer = (await getNamedAccounts()).deployer;
+              deployer = (await getNamedAccounts()).deployer;
               await deployments.fixture(["all"]);
               raffle = await ethers.getContract("Raffle", deployer);
               mockV2Coordinator = await ethers.getContract(
@@ -50,9 +51,29 @@ const {
                   );
               });
           });
-          //   it("Should enter the raffle if the player pay 0.01 minimum", async () => {
-          //       await raffle.enterRaffle({ value: sendValue });
-          //       const response = await raffle.getAddressToAmountFunded(deployer);
-          //       assert.equal(sendValue.toString(), response.toString());
-          //   });
+
+          describe("enterRaffle", async () => {
+              it("Revert when you don't pay enough", async () => {
+                  await expect(
+                      raffle.enterRaffle({ value: 0 })
+                  ).to.be.revertedWith("Raffle__SendMoreToEnterRaffle");
+              });
+
+              it("Success when you pay enough", async () => {
+                  await expect(raffle.enterRaffle({ value: sendValue })).to.not
+                      .be.reverted;
+              });
+
+              it("Records player when they enter", async () => {
+                  await raffle.enterRaffle({ value: sendValue });
+                  const player = await raffle.getPlayer(0);
+                  assert.equal(player, deployer);
+              });
+
+              it("emit an event on enter", async () => {
+                  expect(
+                      await raffle.enterRaffle({ value: sendValue })
+                  ).to.emit("RaffleEnter");
+              });
+          });
       });

@@ -4,6 +4,7 @@ require("hardhat-deploy");
 require("solidity-coverage");
 require("hardhat-gas-reporter");
 require("hardhat-contract-sizer");
+require("solidity-coverage");
 require("dotenv").config();
 
 const RINKEBY_RPC_URL = process.env.RINKEBY_RPC_URL;
@@ -14,6 +15,7 @@ const COINMARKETCAP_API_KEY = process.env.COINMARKETCAP_API_KEY;
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
     solidity: "0.8.9",
+
     namedAccounts: {
         deployer: {
             default: 0,
@@ -22,6 +24,7 @@ module.exports = {
             default: 1,
         },
     },
+
     networks: {
         rinkeby: {
             url: RINKEBY_RPC_URL,
@@ -38,5 +41,14 @@ module.exports = {
 
     etherscan: {
         apiKey: ETHERSCAN_API_KEY,
+    },
+
+    gasReporter: {
+        enabled: false,
+        currency: "USD",
+        outputFile: "gas-report.txt",
+        token: "ETH",
+        noColors: true,
+        coinmarketcap: COINMARKETCAP_API_KEY,
     },
 };
